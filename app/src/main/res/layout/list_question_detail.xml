@@ -28,17 +28,7 @@
         android:text="Small Text"
         android:id="@+id/nameTextView"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/imageButton"/>
-
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:background="@null"
-        android:scaleType="fitXY"
-        android:adjustViewBounds="true"
-        android:src="@drawable/star"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
+
 
 </RelativeLayout>

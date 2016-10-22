@@ -3,9 +3,7 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -23,18 +21,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class QuestionDetailActivity extends AppCompatActivity implements View.OnClickListener, DatabaseReference.CompletionListener {
 
     private ListView mListView;
     private Question mQuestion;
+    private String mQuestionUid;
+
     private QuestionDetailListAdapter mAdapter;
     private ImageButton mImageButton;
     private ProgressDialog mProgress;
-    private String mUid;
 
-    private DatabaseReference mAnswerRef;
+    private DatabaseReference mDatabaseReference;
+    private DatabaseReference favoriteRef;
+    private FirebaseUser user;
+
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -99,12 +100,12 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         mAdapter.notifyDataSetChanged();
 
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("投稿中...");
+        mProgress.setMessage("お気に入り登録中...");
 
-        ImageButton mImageButton = (ImageButton) findViewById(R.id.imageButton);
+        mImageButton = (ImageButton) findViewById(R.id.imageButton);
         mImageButton.setVisibility(View.INVISIBLE);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user == null) {
             // ログインしていなければログイン画面に遷移させる
@@ -113,6 +114,11 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         } else {
             mImageButton.setVisibility(View.VISIBLE);
             mImageButton.setOnClickListener(this);
+
+            mQuestionUid = mQuestion.getQuestionUid();
+
+            mImageButton.setImageResource(R.drawable.star_tapped);
+
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -120,7 +126,6 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
             @Override
             public void onClick(View view) {
                 // ログイン済みのユーザーを収録する
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
                 if (user == null) {
                     // ログインしていなければログイン画面に遷移させる
@@ -156,25 +161,11 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         im.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-        DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference uidRef = dataBaseReference.child(Const.UsersPATH).child(mQuestion.getUid());
-
-        Map<String, String> data = new HashMap<String, String>();
-
-
-        // 表示名
-        // Preferenceから名前を取る
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        String name = sp.getString(Const.NameKEY, "");
-        data.put("name", name);
-
-        // 回答を取得する
-        String preference = "-KUJ64fyFzTojRLC6ZdA";
-
-        data.put("preference", preference);
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        favoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
 
         mProgress.show();
-        uidRef.push().setValue(data, this);
+        favoriteRef.push().setValue(mQuestionUid, this);
         mImageButton.setImageResource(R.drawable.star_tapped);
     }
 }

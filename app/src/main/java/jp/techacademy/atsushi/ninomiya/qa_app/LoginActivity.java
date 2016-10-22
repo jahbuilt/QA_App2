@@ -34,9 +34,14 @@ public class LoginActivity extends AppCompatActivity {
     ProgressDialog mProgress;
 
     FirebaseAuth mAuth;
+    FirebaseUser user;
+
     OnCompleteListener<AuthResult> mCreateAccountListener;
     OnCompleteListener<AuthResult> mLoginListener;
-    DatabaseReference mDataBaseReference;
+    DatabaseReference mDatabaseReference;
+    DatabaseReference favoriteRef;
+
+
 
     // アカウント作成時にフラグを立て、ログイン処理後に名前をFirebaseに保存する
     boolean mIsCreateAccount = false;
@@ -46,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mDataBaseReference = FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         // FirebaseAuthのオブジェクトを取得する
         mAuth = FirebaseAuth.getInstance();
@@ -81,8 +86,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (task.isSuccessful()) {
                     // 成功した場合
-                    FirebaseUser user = mAuth.getCurrentUser();
-                    DatabaseReference userRef = mDataBaseReference.child(Const.UsersPATH).child(user.getUid());
+                    user = mAuth.getCurrentUser();
+                    DatabaseReference userRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid());
 
                     if (mIsCreateAccount) {
                         // アカウント作成の時は表示名をFirebaseに保存する
@@ -207,4 +212,7 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString(Const.NameKEY, name);
         editor.commit();
     }
+
 }
+
+
