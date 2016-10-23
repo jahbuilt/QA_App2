@@ -3,7 +3,9 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +37,10 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
     private DatabaseReference mDatabaseReference;
     private DatabaseReference favoriteRef;
     private FirebaseUser user;
+    private String favorite;
+    private int favoriteIndex;
+    private String favoriteUid;
+
 
 
     private ChildEventListener mEventListener = new ChildEventListener() {
@@ -100,7 +106,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         mAdapter.notifyDataSetChanged();
 
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("お気に入り登録中...");
+        mProgress.setMessage("お気に入り更新中...");
 
         mImageButton = (ImageButton) findViewById(R.id.imageButton);
         mImageButton.setVisibility(View.INVISIBLE);
@@ -113,11 +119,18 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
             startActivity(intent);
         } else {
             mImageButton.setVisibility(View.VISIBLE);
-            mImageButton.setOnClickListener(this);
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            favorite = sp.getString(Const.FavoriteKEY, "");
 
             mQuestionUid = mQuestion.getQuestionUid();
+            favoriteIndex = favorite.indexOf(mQuestionUid);
 
-            mImageButton.setImageResource(R.drawable.star_tapped);
+            if (favoriteIndex != -1) {
+                mImageButton.setImageResource(R.drawable.star_tapped);
+            }
+
+            mImageButton.setOnClickListener(this);
 
         }
 
@@ -150,7 +163,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         if (databaseError == null) {
             finish();
         } else {
-            Snackbar.make(findViewById(android.R.id.content), "お気に入り登録に失敗しました", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(android.R.id.content), "お気に入り更新に失敗しました", Snackbar.LENGTH_LONG).show();
         }
 
     }
@@ -164,8 +177,10 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
         favoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
 
-        mProgress.show();
-        favoriteRef.push().setValue(mQuestionUid, this);
-        mImageButton.setImageResource(R.drawable.star_tapped);
+        if (favoriteIndex == -1) {
+            mProgress.show();
+            favoriteRef.push().setValue(mQuestionUid, this);
+            mImageButton.setImageResource(R.drawable.star_tapped);
+        }
     }
 }
