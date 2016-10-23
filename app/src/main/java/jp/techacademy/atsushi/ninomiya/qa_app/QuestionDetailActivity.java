@@ -3,9 +3,7 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -37,7 +35,6 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
     private DatabaseReference mDatabaseReference;
     private DatabaseReference favoriteRef;
     private FirebaseUser user;
-    private String favorite;
     private int favoriteIndex;
     private String favoriteUid;
 
@@ -120,11 +117,9 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         } else {
             mImageButton.setVisibility(View.VISIBLE);
 
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-            favorite = sp.getString(Const.FavoriteKEY, "");
-
             mQuestionUid = mQuestion.getQuestionUid();
-            favoriteIndex = favorite.indexOf(mQuestionUid);
+            favoriteIndex = Const.favoriteArrayList.indexOf(mQuestionUid);
+            favoriteUid = Const.favoriteArrayList.get(favoriteIndex).mFavoriteUid;
 
             if (favoriteIndex != -1) {
                 mImageButton.setImageResource(R.drawable.star_tapped);
@@ -181,6 +176,10 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
             mProgress.show();
             favoriteRef.push().setValue(mQuestionUid, this);
             mImageButton.setImageResource(R.drawable.star_tapped);
+        } else {
+            mProgress.show();
+            favoriteRef.push().removeValue(favoriteUid, this);
+            mImageButton.setImageResource(R.drawable.star);
         }
     }
 }

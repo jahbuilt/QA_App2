@@ -7,8 +7,8 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
 import java.io.Serializable;
 
 public class Favorite implements Serializable {
-    private String mFavoriteUid;
-    private String mQuestionUid;;
+    public String mFavoriteUid;
+    public String mQuestionUid;;
 
     public Favorite(String favoriteUid, String questionUid) {
         mFavoriteUid = favoriteUid;

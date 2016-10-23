@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -23,7 +22,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,12 +113,9 @@ public class LoginActivity extends AppCompatActivity {
                                 if (favoriteMap != null) {
                                     for (Object key : favoriteMap.keySet()) {
                                         Object value = favoriteMap.get(key);
-                                        Favorite temp = new Favorite ((String) key, (String) value);
-                                        favoriteArrayList.add( (temp) );
-                                        Gson gson = new Gson();
-                                        favorite = gson.toJson(favoriteArrayList);
+                                        Favorite temp = new Favorite((String) key, (String) value);
+                                        Const.favoriteArrayList.add((temp));
                                     }
-                                    saveFavorites(favorite);
                                 }
 
                             }
@@ -228,14 +223,6 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sp.edit();
         editor.putString(Const.NameKEY, name);
         editor.commit();
-    }
-
-    private void saveFavorites(String favorite) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString(Const.FavoriteKEY ,favorite);
-        editor.commit();
-        Log.d("お気に入りリスト",favorite);
     }
 }
 

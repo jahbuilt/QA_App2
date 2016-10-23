@@ -1,5 +1,7 @@
 package jp.techacademy.atsushi.ninomiya.qa_app;
 
+import java.util.ArrayList;
+
 /**
  * Created by ninomiyaatsushi on 2016/10/16.
  */
@@ -11,5 +13,5 @@ public class Const {
     public static final String FavoritesPATH = "favorites"; // Firebaseに解答を保存するパス
 
     public static final String NameKEY = "name"; // Preferenceに表示名を保存する時のキー
-    public static final String FavoriteKEY = "favorites"; // Preferenceにお気に入りを保存する時のキー
+    public static final ArrayList<Favorite> favoriteArrayList = new ArrayList<Favorite>();
 }
