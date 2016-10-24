@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
@@ -119,10 +120,12 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
 
             mQuestionUid = mQuestion.getQuestionUid();
             favoriteIndex = Const.favoriteArrayList.indexOf(mQuestionUid);
-            favoriteUid = Const.favoriteArrayList.get(favoriteIndex).mFavoriteUid;
+            Log.d("お気に入りリスト", mQuestionUid);
+            Log.d("お気に入りリスト", String.valueOf(favoriteIndex));
 
             if (favoriteIndex != -1) {
                 mImageButton.setImageResource(R.drawable.star_tapped);
+                favoriteUid = Const.favoriteArrayList.get(favoriteIndex).mFavoriteUid;
             }
 
             mImageButton.setOnClickListener(this);
