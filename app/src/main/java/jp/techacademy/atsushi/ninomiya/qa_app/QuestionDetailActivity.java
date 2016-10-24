@@ -178,7 +178,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
             mImageButton.setImageResource(R.drawable.star_tapped);
         } else {
             mProgress.show();
-            favoriteRef.push().removeValue(favoriteUid, this);
+            favoriteRef.child(favoriteUid).removeValue(this);
             mImageButton.setImageResource(R.drawable.star);
         }
     }
