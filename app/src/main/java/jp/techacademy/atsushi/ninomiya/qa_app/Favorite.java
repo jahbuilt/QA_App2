@@ -8,18 +8,17 @@ import java.io.Serializable;
 
 public class Favorite implements Serializable {
     public String mFavoriteUid;
-    public String mQuestionUid;;
+    public String mQuestionUid;
 
     public Favorite(String favoriteUid, String questionUid) {
         mFavoriteUid = favoriteUid;
         mQuestionUid = questionUid;
     }
 
-    public String getFavoriteUid() {
-        return mFavoriteUid;
+    @Override
+    public String toString() {
+        return mFavoriteUid + mQuestionUid;
     }
 
-    public String getQuestionUid() {
-        return mQuestionUid;
+
     }
-}

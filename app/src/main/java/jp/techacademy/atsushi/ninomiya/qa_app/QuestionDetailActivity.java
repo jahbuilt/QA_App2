@@ -20,8 +20,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.apache.commons.collections15.BidiMap;
+import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class QuestionDetailActivity extends AppCompatActivity implements View.OnClickListener, DatabaseReference.CompletionListener {
 
@@ -38,8 +43,11 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
     private FirebaseUser user;
     private int favoriteIndex;
     private String favoriteUid;
+    private Map favoriteMap;
+    private BidiMap bidiFavoriteMap;
 
-
+    public QuestionDetailActivity() {
+    }
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -84,7 +92,19 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         public void onCancelled(DatabaseError databaseError) {
 
         }
+
     };
+
+    ValueEventListener mValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+            favoriteMap = (Map) snapshot.getValue();
+        }
+        @Override
+        public void onCancelled(DatabaseError firebaseError) {
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,14 +138,19 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         } else {
             mImageButton.setVisibility(View.VISIBLE);
 
-            mQuestionUid = mQuestion.getQuestionUid();
-            favoriteIndex = Const.favoriteArrayList.indexOf(mQuestionUid);
-            Log.d("お気に入りリスト", mQuestionUid);
-            Log.d("お気に入りリスト", String.valueOf(favoriteIndex));
+            mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+            favoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
+            favoriteRef.addValueEventListener(mValueEventListener);
 
-            if (favoriteIndex != -1) {
+            mQuestionUid = mQuestion.getQuestionUid();
+
+            if (favoriteMap.containsValue(mQuestionUid)) {
+
                 mImageButton.setImageResource(R.drawable.star_tapped);
-                favoriteUid = Const.favoriteArrayList.get(favoriteIndex).mFavoriteUid;
+                bidiFavoriteMap = new DualHashBidiMap(favoriteMap);
+                favoriteUid = bidiFavoriteMap.get(mQuestionUid).toString();
+
+                Log.d("お気に入りリスト", String.valueOf(favoriteUid));
             }
 
             mImageButton.setOnClickListener(this);

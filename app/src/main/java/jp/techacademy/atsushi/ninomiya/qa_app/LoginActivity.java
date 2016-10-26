@@ -23,7 +23,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +39,6 @@ public class LoginActivity extends AppCompatActivity {
     OnCompleteListener<AuthResult> mCreateAccountListener;
     OnCompleteListener<AuthResult> mLoginListener;
     DatabaseReference mDatabaseReference;
-    String favorite;
 
 
     // アカウント作成時にフラグを立て、ログイン処理後に名前をFirebaseに保存する
@@ -106,18 +104,6 @@ public class LoginActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot snapshot) {
                                 Map data = (Map) snapshot.getValue();
                                 saveName((String)data.get("name"));
-
-                                ArrayList<Favorite> favoriteArrayList = new ArrayList<Favorite>();
-                                HashMap favoriteMap = (HashMap) data.get("favorites");
-
-                                if (favoriteMap != null) {
-                                    for (Object key : favoriteMap.keySet()) {
-                                        Object value = favoriteMap.get(key);
-                                        Favorite temp = new Favorite((String) key, (String) value);
-                                        Const.favoriteArrayList.add((temp));
-                                    }
-                                }
-
                             }
                             @Override
                             public void onCancelled(DatabaseError firebaseError) {
