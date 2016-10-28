@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Question> mQuestionArrayList;
     private QuestionsListAdapter mAdapter;
 
+
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -170,7 +171,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(MenuItem item) {
                 int id = item.getItemId();
 
-                if (id == R.id.nav_hobby) {
+                if (id == R.id.list_favorite) {
+                    Intent intent = new Intent(getApplicationContext(), FavoritesListActivity.class);
+                    startActivity(intent);
+                    return true;
+                } else if (id == R.id.nav_hobby) {
                     mToolbar.setTitle("趣味");
                     mGenre = 1;
                 } else if (id == R.id.nav_life) {

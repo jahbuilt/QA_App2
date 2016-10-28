@@ -20,13 +20,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import org.apache.commons.collections15.BidiMap;
-import org.apache.commons.collections15.bidimap.DualHashBidiMap;
-
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class QuestionDetailActivity extends AppCompatActivity implements View.OnClickListener, DatabaseReference.CompletionListener {
 
@@ -39,15 +35,12 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
     private ProgressDialog mProgress;
 
     private DatabaseReference mDatabaseReference;
-    private DatabaseReference favoriteRef;
+    private DatabaseReference mFavoriteRef;
     private FirebaseUser user;
-    private int favoriteIndex;
-    private String favoriteUid;
-    private Map favoriteMap;
-    private BidiMap bidiFavoriteMap;
+    private String mFavoriteKey;
+    private String mFavoriteValue;
+    private ArrayList<Favorite> favoriteArrayList = new ArrayList<Favorite>();
 
-    public QuestionDetailActivity() {
-    }
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -95,14 +88,42 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
 
     };
 
-    ValueEventListener mValueEventListener = new ValueEventListener() {
+    private ChildEventListener mEventListener2 = new ChildEventListener() {
         @Override
-        public void onDataChange(DataSnapshot snapshot) {
-            favoriteMap = (Map) snapshot.getValue();
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            mFavoriteValue = (String) dataSnapshot.getValue();
+            Log.d("mFavoriteValue", mFavoriteValue);
+
+            if (mFavoriteValue.equals(mQuestionUid)) {
+                mImageButton.setImageResource(R.drawable.star_tapped);
+                mFavoriteKey = (String) dataSnapshot.getKey();
+                Log.d("mFavoriteKey", mFavoriteKey);
+            }
+            Favorite favorite = new Favorite(mFavoriteKey, mFavoriteValue);
+            favoriteArrayList.add(favorite);
+            Log.d("favoriteArrayList",favoriteArrayList.toString());
         }
+
         @Override
-        public void onCancelled(DatabaseError firebaseError) {
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            mImageButton.setImageResource(R.drawable.star_tapped);
         }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+            mImageButton.setImageResource(R.drawable.star);
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+
     };
 
 
@@ -114,8 +135,9 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         // 渡ってきたQuestionのオブジェクトを保持する
         Bundle extras = getIntent().getExtras();
         mQuestion = (Question) extras.get("question");
-
         setTitle(mQuestion.getTitle());
+        mQuestionUid = mQuestion.getQuestionUid();
+
 
         // ListViewの準備
         mListView = (ListView) findViewById(R.id.listView);
@@ -137,25 +159,14 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
             startActivity(intent);
         } else {
             mImageButton.setVisibility(View.VISIBLE);
-
-            mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-            favoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
-            favoriteRef.addValueEventListener(mValueEventListener);
-
-            mQuestionUid = mQuestion.getQuestionUid();
-
-            if (favoriteMap.containsValue(mQuestionUid)) {
-
-                mImageButton.setImageResource(R.drawable.star_tapped);
-                bidiFavoriteMap = new DualHashBidiMap(favoriteMap);
-                favoriteUid = bidiFavoriteMap.get(mQuestionUid).toString();
-
-                Log.d("お気に入りリスト", String.valueOf(favoriteUid));
-            }
-
             mImageButton.setOnClickListener(this);
 
+            mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+            mFavoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
+            mFavoriteRef.addChildEventListener(mEventListener2);
         }
+
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -198,16 +209,16 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         im.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        favoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
+        mFavoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
 
-        if (favoriteIndex == -1) {
+        if (mFavoriteKey == null) {
             mProgress.show();
-            favoriteRef.push().setValue(mQuestionUid, this);
-            mImageButton.setImageResource(R.drawable.star_tapped);
+            mFavoriteRef.push().setValue(mQuestionUid, this);
         } else {
             mProgress.show();
-            favoriteRef.child(favoriteUid).removeValue(this);
-            mImageButton.setImageResource(R.drawable.star);
+            mFavoriteRef.child(mFavoriteKey).removeValue(this);
         }
+
     }
+
 }
