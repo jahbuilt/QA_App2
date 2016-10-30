@@ -23,12 +23,15 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class QuestionDetailActivity extends AppCompatActivity implements View.OnClickListener, DatabaseReference.CompletionListener {
 
     private ListView mListView;
     private Question mQuestion;
     private String mQuestionUid;
+    private String mGenreString;
+
 
     private QuestionDetailListAdapter mAdapter;
     private ImageButton mImageButton;
@@ -91,27 +94,30 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
     private ChildEventListener mEventListener2 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            mFavoriteValue = (String) dataSnapshot.getValue();
-            Log.d("mFavoriteValue", mFavoriteValue);
 
-            if (mFavoriteValue.equals(mQuestionUid)) {
-                mImageButton.setImageResource(R.drawable.star_tapped);
-                mFavoriteKey = (String) dataSnapshot.getKey();
-                Log.d("mFavoriteKey", mFavoriteKey);
+            HashMap map = (HashMap) dataSnapshot.getValue();
+
+            if (map != null) {
+                for (Object key : map.keySet()) {
+                    mFavoriteValue = (String) map.get("uid");
+
+                    if (mFavoriteValue.equals(mQuestionUid)) {
+                        mFavoriteKey = dataSnapshot.getKey();
+                        mImageButton.setImageResource(R.drawable.star_tapped);
+                        Log.d("mFavoriteKey", mFavoriteKey);
+                    }
+                }
             }
-            Favorite favorite = new Favorite(mFavoriteKey, mFavoriteValue);
-            favoriteArrayList.add(favorite);
-            Log.d("favoriteArrayList",favoriteArrayList.toString());
         }
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            mImageButton.setImageResource(R.drawable.star_tapped);
+
         }
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {
-            mImageButton.setImageResource(R.drawable.star);
+
         }
 
         @Override
@@ -212,11 +218,22 @@ public class QuestionDetailActivity extends AppCompatActivity implements View.On
         mFavoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
 
         if (mFavoriteKey == null) {
+
+            Map<String, String> data = new HashMap<String, String>();
+
+            data.put("uid", mQuestionUid);
+            data.put("genre", String.valueOf(mQuestion.getGenre()));
+
             mProgress.show();
-            mFavoriteRef.push().setValue(mQuestionUid, this);
+            mFavoriteRef.push().setValue(data, this);
+            mImageButton.setImageResource(R.drawable.star_tapped);
+
+
         } else {
             mProgress.show();
             mFavoriteRef.child(mFavoriteKey).removeValue(this);
+            mImageButton.setImageResource(R.drawable.star);
+
         }
 
     }

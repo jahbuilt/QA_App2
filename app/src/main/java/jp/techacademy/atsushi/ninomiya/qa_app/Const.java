@@ -12,4 +12,5 @@ public class Const {
     public static final String FavoritesPATH = "favorites"; // Firebaseにお気に入りを保存するパス
 
     public static final String NameKEY = "name"; // Preferenceに表示名を保存する時のキー
+
 }

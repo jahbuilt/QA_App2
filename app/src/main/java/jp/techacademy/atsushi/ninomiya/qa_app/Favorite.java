@@ -7,18 +7,23 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
 import java.io.Serializable;
 
 public class Favorite implements Serializable {
-    public String mFavoriteKey;
-    public String mFavoriteValue;
+    private String mQuestionUid;
+    private String mFavoriteKey;
+    private int mGenre;
 
-    public Favorite(String favoriteKey, String favoriteValue) {
+    public Favorite(String questionUid, int genre, String favoriteKey) {
+        mQuestionUid = questionUid;
+        mGenre = genre;
         mFavoriteKey = favoriteKey;
-        mFavoriteValue = favoriteValue;
-    }
-
-    @Override
-    public String toString() {
-        return mFavoriteKey + mFavoriteValue;
-    }
-
 
     }
+
+    public String getUid() {
+        return mQuestionUid;
+    }
+
+
+    public int getGerre() {
+        return mGenre;
+    }
+}

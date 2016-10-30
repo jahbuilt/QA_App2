@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FavoritesListActivity extends AppCompatActivity {
 
@@ -37,53 +38,61 @@ public class FavoritesListActivity extends AppCompatActivity {
     private ListView mListView;
     private ArrayList<Question> mQuestionArrayList = new ArrayList<Question>();
     private FavoritesListAdapter mAdapter;
-    private DatabaseReference mQuestionUidRef;
 
     private DatabaseReference mFavoriteRef;
     private FirebaseUser user;
     private String mFavoriteValue;
+    private String mGenreString;
+    private DatabaseReference mGenreRef;
+
+    Map<String, String> favoriteMap = new HashMap<String, String>();
 
 
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+            Log.d("dataSnapshot.getValue()", dataSnapshot.getValue().toString());
+
             HashMap map = (HashMap) dataSnapshot.getValue();
+
             String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            Bitmap image = null;
-            byte[] bytes;
-            if (imageString != null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
-            }
-
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get((String) key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
+                String body = (String) map.get("body");
+                String name = (String) map.get("name");
+                String uid = (String) map.get("uid");
+                String imageString = (String) map.get("image");
+                Bitmap image = null;
+                byte[] bytes;
+                if (imageString != null) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    bytes = Base64.decode(imageString, Base64.DEFAULT);
+                } else {
+                    bytes = new byte[0];
                 }
-                Log.d("answerArrayList",answerArrayList.toString());
 
-            }
+                ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+                HashMap answerMap = (HashMap) map.get("answers");
+                if (answerMap != null) {
+                    for (Object key : answerMap.keySet()) {
+                        HashMap temp = (HashMap) answerMap.get((String) key);
+                        String answerBody = (String) temp.get("body");
+                        String answerName = (String) temp.get("name");
+                        String answerUid = (String) temp.get("uid");
+                        Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+                        answerArrayList.add(answer);
+                    }
 
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
-            mQuestionArrayList.add(question);
-            mAdapter.notifyDataSetChanged();
+                }
+                mGenre = Integer.parseInt(mGenreString);
 
-            Log.d("mQuestionArrayList", mQuestionArrayList.toString());
+                Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+                mQuestionArrayList.add(question);
+                mAdapter.notifyDataSetChanged();
+                Log.d("body", question.toString());
+
         }
+
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
@@ -109,13 +118,16 @@ public class FavoritesListActivity extends AppCompatActivity {
     private ChildEventListener mEventListener2 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            mFavoriteValue = (String) dataSnapshot.getValue();
-            Log.d("mFavoriteKey", mFavoriteValue);
 
-            mQuestionUidRef = mDatabaseReference.child(Const.ContentsPATH).child(Const.GenrePATH).child(mFavoriteValue);
-            Log.d("mFavoriteKey", mFavoriteValue);
+            HashMap map = (HashMap) dataSnapshot.getValue();
 
-            mQuestionUidRef.addChildEventListener(mEventListener);
+            if (map != null) {
+                for (Object key : map.keySet()) {
+                    mFavoriteValue = (String) map.get("uid");
+                    mGenreString = (String) map.get("genre");
+                }
+            }
+            getQuestions(mFavoriteValue, mGenreString);
         }
 
         @Override
@@ -201,6 +213,8 @@ public class FavoritesListActivity extends AppCompatActivity {
             // ListViewの準備
             mListView = (ListView) findViewById(R.id.listView);
             mAdapter = new FavoritesListAdapter(this);
+
+            mAdapter.setQuestionArrayList(mQuestionArrayList);
             mListView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
 
@@ -210,7 +224,14 @@ public class FavoritesListActivity extends AppCompatActivity {
         }
     }
 
-    @Override
+    public void getQuestions(String questionid, String genre) {
+            DatabaseReference mQuestionUidRef = mDatabaseReference.child(Const.ContentsPATH).child(genre).child(questionid);
+            mQuestionUidRef.addChildEventListener(mEventListener);
+    }
+
+
+
+        @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
