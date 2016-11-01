@@ -26,7 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class FavoritesListActivity extends AppCompatActivity {
 
@@ -45,7 +45,7 @@ public class FavoritesListActivity extends AppCompatActivity {
     private String mGenreString;
     private DatabaseReference mGenreRef;
 
-    Map<String, String> favoriteMap = new HashMap<String, String>();
+    List<String[]> favoriteMap = new ArrayList<String[]>();
 
 
 
@@ -116,18 +116,26 @@ public class FavoritesListActivity extends AppCompatActivity {
     };
 
     private ChildEventListener mEventListener2 = new ChildEventListener() {
+        int count = 0;
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d("bbb", dataSnapshot.getValue().toString());
 
             HashMap map = (HashMap) dataSnapshot.getValue();
 
             if (map != null) {
-                for (Object key : map.keySet()) {
+                    count++;
+                    Log.d("bbb", ""+count);
+                    for (Object key : map.keySet()) {
                     mFavoriteValue = (String) map.get("uid");
                     mGenreString = (String) map.get("genre");
-                }
+                    favoriteMap.add(new String[]{mGenreString, mFavoriteValue});
+                        }
+//                    if (count >= dataSnapshot.getChildrenCount()) {
+//                        getQuestions();
+//
+//                }
             }
-            getQuestions(mFavoriteValue, mGenreString);
         }
 
         @Override
@@ -220,16 +228,18 @@ public class FavoritesListActivity extends AppCompatActivity {
 
             mDatabaseReference = FirebaseDatabase.getInstance().getReference();
             mFavoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
+            Log.d("aaa", mFavoriteRef.toString());
             mFavoriteRef.addChildEventListener(mEventListener2);
         }
     }
 
-    public void getQuestions(String questionid, String genre) {
-            DatabaseReference mQuestionUidRef = mDatabaseReference.child(Const.ContentsPATH).child(genre).child(questionid);
-            mQuestionUidRef.addChildEventListener(mEventListener);
-    }
-
-
+//    public void getQuestions() {
+//        Log.d("aaa", "aaaa");
+//        for (int i = 0; i < favoriteMap.size(); i++) {
+//            DatabaseReference mQuestionUidRef = mDatabaseReference.child(Const.ContentsPATH).child(favoriteMap.get(i)[0]).child(favoriteMap.get(i)[1]);
+//            mQuestionUidRef.addChildEventListener(mEventListener);
+//        }
+//    }
 
         @Override
     public boolean onCreateOptionsMenu(Menu menu) {
