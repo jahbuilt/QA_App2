@@ -48,7 +48,6 @@ public class FavoritesListActivity extends AppCompatActivity {
     private DatabaseReference mGenreRef3;
     private DatabaseReference mGenreRef4;
 
-
     private boolean isFinishFavorite;
     private boolean isFinishQuestion1;
     private boolean isFinishQuestion2;
@@ -99,6 +98,9 @@ public class FavoritesListActivity extends AppCompatActivity {
             mQuestionMap.put(questionId, question);
             count++;
 
+            if (!dataSnapshot.exists()) {
+                isFinishQuestion1 = true;
+            }
             if (count == dataSnapshot.getChildrenCount()) {
                 isFinishQuestion1 = true;
                 if (isFinishFavorite && isFinishQuestion2 && isFinishQuestion3 && isFinishQuestion4) {
@@ -169,6 +171,9 @@ public class FavoritesListActivity extends AppCompatActivity {
             mQuestionMap.put(questionId, question);
             count++;
 
+            if (!dataSnapshot.exists()) {
+                isFinishQuestion2 = true;
+            }
             if (count == dataSnapshot.getChildrenCount()) {
                 isFinishQuestion2 = true;
                 if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion3 && isFinishQuestion4) {
@@ -239,6 +244,10 @@ public class FavoritesListActivity extends AppCompatActivity {
             mQuestionMap.put(questionId, question);
             count++;
 
+            if (!dataSnapshot.exists()) {
+                isFinishQuestion3 = true;
+            }
+
             if (count == dataSnapshot.getChildrenCount()) {
                 isFinishQuestion3 = true;
                 if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion2 && isFinishQuestion4) {
@@ -308,6 +317,10 @@ public class FavoritesListActivity extends AppCompatActivity {
             Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 4, bytes, answerArrayList);
             mQuestionMap.put(questionId, question);
             count++;
+
+            if (!dataSnapshot.exists()) {
+                isFinishQuestion4 = true;
+            }
 
             if (count == dataSnapshot.getChildrenCount()) {
                 isFinishQuestion4 = true;
@@ -445,6 +458,10 @@ public class FavoritesListActivity extends AppCompatActivity {
             startActivity(intent);
         } else {
 
+            // ListViewの準備
+            mListView = (ListView) findViewById(R.id.listView);
+            mAdapter = new FavoritesListAdapter(this);
+
             mDatabaseReference = FirebaseDatabase.getInstance().getReference();
             mFavoriteRef = mDatabaseReference.child(Const.UsersPATH).child(user.getUid()).child(Const.FavoritesPATH);
             Log.d("aaa", mFavoriteRef.toString());
@@ -477,9 +494,6 @@ public class FavoritesListActivity extends AppCompatActivity {
                 }
             }
         }
-        // ListViewの準備
-        mListView = (ListView) findViewById(R.id.listView);
-        mAdapter = new FavoritesListAdapter(this);
 
         mAdapter.setQuestionArrayList(matchedItems);
         mListView.setAdapter(mAdapter);
