@@ -43,10 +43,11 @@ public class FavoritesListActivity extends AppCompatActivity {
     private String mFavoriteQuestion;
     private String mFavoriteGenre;
 
-    private DatabaseReference mGenreRef1;
-    private DatabaseReference mGenreRef2;
-    private DatabaseReference mGenreRef3;
-    private DatabaseReference mGenreRef4;
+    private DatabaseReference mGenreRef;
+//    private DatabaseReference mGenreRef1;
+//    private DatabaseReference mGenreRef2;
+//    private DatabaseReference mGenreRef3;
+//    private DatabaseReference mGenreRef4;
 
     private boolean isFinishFavorite;
     private boolean isFinishQuestion1;
@@ -54,58 +55,64 @@ public class FavoritesListActivity extends AppCompatActivity {
     private boolean isFinishQuestion3;
     private boolean isFinishQuestion4;
 
-    HashMap<String,Question> mQuestionMap = new HashMap<String,Question>();
+    HashMap<String, Question> mQuestionMap = new HashMap<String, Question>();
     private List<String[]> favoriteMap = new ArrayList<String[]>();
 
-
-    private ChildEventListener mEventListener1 = new ChildEventListener() {
-        int count = 0;
+    private ChildEventListener mQuestionEventListener = new ChildEventListener() {
         @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            String questionId = (String) dataSnapshot.getKey();
-            HashMap map = (HashMap) dataSnapshot.getValue();
-
-            String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            Bitmap image = null;
-            byte[] bytes;
-
-            if (imageString != null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
+        public void onChildAdded(DataSnapshot parentDataSnapshot, String s) {
+            if (!parentDataSnapshot.getKey().equals("contents")) {
+                return;
             }
 
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get((String) key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
+            Iterable<DataSnapshot> genreIterable = parentDataSnapshot.getChildren();
+
+            for (DataSnapshot childrenDataSnapshot : genreIterable) {
+                Iterable<DataSnapshot> childrenIterable = childrenDataSnapshot.getChildren();
+
+                for (DataSnapshot dataSnapshot : childrenIterable) {
+
+                    String questionId = (String) dataSnapshot.getKey();
+                    HashMap map = (HashMap) dataSnapshot.getValue();
+
+                    String title = (String) map.get("title");
+                    String body = (String) map.get("body");
+                    String name = (String) map.get("name");
+                    String uid = (String) map.get("uid");
+                    String imageString = (String) map.get("image");
+                    Bitmap image = null;
+                    byte[] bytes;
+
+                    Log.d("imageString", imageString);
+
+                    if (imageString != null) {
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        bytes = Base64.decode(imageString, Base64.DEFAULT);
+                    } else {
+                        bytes = new byte[0];
+                    }
+
+                    ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+                    HashMap answerMap = (HashMap) map.get("answers");
+                    if (answerMap != null) {
+                        for (Object key : answerMap.keySet()) {
+                            HashMap temp = (HashMap) answerMap.get((String) key);
+                            String answerBody = (String) temp.get("body");
+                            String answerName = (String) temp.get("name");
+                            String answerUid = (String) temp.get("uid");
+                            Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+                            answerArrayList.add(answer);
+                        }
+                    }
+
+                    Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 1, bytes, answerArrayList);
+                    mQuestionMap.put(questionId, question);
                 }
-            }
 
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 1, bytes, answerArrayList);
-            mQuestionMap.put(questionId, question);
-            count++;
-
-            if (!dataSnapshot.exists()) {
-                isFinishQuestion1 = true;
             }
-            if (count == dataSnapshot.getChildrenCount()) {
-                isFinishQuestion1 = true;
-                if (isFinishFavorite && isFinishQuestion2 && isFinishQuestion3 && isFinishQuestion4) {
-                    matchItems();
-                }
+            isFinishQuestion1 = true;
+            if (isFinishFavorite) {
+                matchItems();
             }
         }
 
@@ -131,229 +138,303 @@ public class FavoritesListActivity extends AppCompatActivity {
 
     };
 
-    private ChildEventListener mEventListener2 = new ChildEventListener() {
-        int count = 0;
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            String questionId = (String) dataSnapshot.getKey();
-            HashMap map = (HashMap) dataSnapshot.getValue();
-
-            String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            Bitmap image = null;
-            byte[] bytes;
-
-            if (imageString != null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
-            }
-
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get((String) key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
-                }
-            }
-
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 2, bytes, answerArrayList);
-            mQuestionMap.put(questionId, question);
-            count++;
-
-            if (!dataSnapshot.exists()) {
-                isFinishQuestion2 = true;
-            }
-            if (count == dataSnapshot.getChildrenCount()) {
-                isFinishQuestion2 = true;
-                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion3 && isFinishQuestion4) {
-                    matchItems();
-                }
-            }
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-
-    };
-
-    private ChildEventListener mEventListener3 = new ChildEventListener() {
-        int count = 0;
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            String questionId = (String) dataSnapshot.getKey();
-            HashMap map = (HashMap) dataSnapshot.getValue();
-
-            String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            Bitmap image = null;
-            byte[] bytes;
-
-            if (imageString != null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
-            }
-
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get((String) key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
-                }
-            }
-
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 3, bytes, answerArrayList);
-            mQuestionMap.put(questionId, question);
-            count++;
-
-            if (!dataSnapshot.exists()) {
-                isFinishQuestion3 = true;
-            }
-
-            if (count == dataSnapshot.getChildrenCount()) {
-                isFinishQuestion3 = true;
-                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion2 && isFinishQuestion4) {
-                    matchItems();
-                }
-            }
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-
-    };
-
-    private ChildEventListener mEventListener4 = new ChildEventListener() {
-        int count = 0;
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            String questionId = (String) dataSnapshot.getKey();
-            HashMap map = (HashMap) dataSnapshot.getValue();
-
-            String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            Bitmap image = null;
-            byte[] bytes;
-
-            if (imageString != null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
-            }
-
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get((String) key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
-                }
-            }
-
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 4, bytes, answerArrayList);
-            mQuestionMap.put(questionId, question);
-            count++;
-
-            if (!dataSnapshot.exists()) {
-                isFinishQuestion4 = true;
-            }
-
-            if (count == dataSnapshot.getChildrenCount()) {
-                isFinishQuestion4 = true;
-                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion2 && isFinishQuestion3) {
-                    matchItems();
-                }
-            }
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-
-    };
+//    private ChildEventListener mEventListener1 = new ChildEventListener() {
+//        int count = 0;
+//        @Override
+//        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//            String questionId = (String) dataSnapshot.getKey();
+//            HashMap map = (HashMap) dataSnapshot.getValue();
+//
+//            String title = (String) map.get("title");
+//            String body = (String) map.get("body");
+//            String name = (String) map.get("name");
+//            String uid = (String) map.get("uid");
+//            String imageString = (String) map.get("image");
+//            Bitmap image = null;
+//            byte[] bytes;
+//
+//            if (imageString != null) {
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                bytes = Base64.decode(imageString, Base64.DEFAULT);
+//            } else {
+//                bytes = new byte[0];
+//            }
+//
+//            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+//            HashMap answerMap = (HashMap) map.get("answers");
+//            if (answerMap != null) {
+//                for (Object key : answerMap.keySet()) {
+//                    HashMap temp = (HashMap) answerMap.get((String) key);
+//                    String answerBody = (String) temp.get("body");
+//                    String answerName = (String) temp.get("name");
+//                    String answerUid = (String) temp.get("uid");
+//                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+//                    answerArrayList.add(answer);
+//                }
+//            }
+//
+//            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 1, bytes, answerArrayList);
+//            mQuestionMap.put(questionId, question);
+//            count++;
+//
+//            if (!dataSnapshot.exists()) {
+//                isFinishQuestion1 = true;
+//            }
+//            if (count == ) {
+//                isFinishQuestion1 = true;
+//                if (isFinishFavorite && isFinishQuestion2 && isFinishQuestion3 && isFinishQuestion4) {
+//                    matchItems();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//        }
+//
+//        @Override
+//        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//
+//        }
+//
+//    };
+//
+//    private ChildEventListener mEventListener2 = new ChildEventListener() {
+//        int count = 0;
+//        @Override
+//        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//            String questionId = (String) dataSnapshot.getKey();
+//            HashMap map = (HashMap) dataSnapshot.getValue();
+//
+//            String title = (String) map.get("title");
+//            String body = (String) map.get("body");
+//            String name = (String) map.get("name");
+//            String uid = (String) map.get("uid");
+//            String imageString = (String) map.get("image");
+//            Bitmap image = null;
+//            byte[] bytes;
+//
+//            if (imageString != null) {
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                bytes = Base64.decode(imageString, Base64.DEFAULT);
+//            } else {
+//                bytes = new byte[0];
+//            }
+//
+//            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+//            HashMap answerMap = (HashMap) map.get("answers");
+//            if (answerMap != null) {
+//                for (Object key : answerMap.keySet()) {
+//                    HashMap temp = (HashMap) answerMap.get((String) key);
+//                    String answerBody = (String) temp.get("body");
+//                    String answerName = (String) temp.get("name");
+//                    String answerUid = (String) temp.get("uid");
+//                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+//                    answerArrayList.add(answer);
+//                }
+//            }
+//
+//            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 2, bytes, answerArrayList);
+//            mQuestionMap.put(questionId, question);
+//            count++;
+//
+//            if (!dataSnapshot.exists()) {
+//                isFinishQuestion2 = true;
+//            }
+//            if (count == dataSnapshot.getChildrenCount()) {
+//                isFinishQuestion2 = true;
+//                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion3 && isFinishQuestion4) {
+//                    matchItems();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//        }
+//
+//        @Override
+//        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//
+//        }
+//
+//    };
+//
+//    private ChildEventListener mEventListener3 = new ChildEventListener() {
+//        int count = 0;
+//        @Override
+//        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//            String questionId = (String) dataSnapshot.getKey();
+//            HashMap map = (HashMap) dataSnapshot.getValue();
+//
+//            String title = (String) map.get("title");
+//            String body = (String) map.get("body");
+//            String name = (String) map.get("name");
+//            String uid = (String) map.get("uid");
+//            String imageString = (String) map.get("image");
+//            Bitmap image = null;
+//            byte[] bytes;
+//
+//            if (imageString != null) {
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                bytes = Base64.decode(imageString, Base64.DEFAULT);
+//            } else {
+//                bytes = new byte[0];
+//            }
+//
+//            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+//            HashMap answerMap = (HashMap) map.get("answers");
+//            if (answerMap != null) {
+//                for (Object key : answerMap.keySet()) {
+//                    HashMap temp = (HashMap) answerMap.get((String) key);
+//                    String answerBody = (String) temp.get("body");
+//                    String answerName = (String) temp.get("name");
+//                    String answerUid = (String) temp.get("uid");
+//                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+//                    answerArrayList.add(answer);
+//                }
+//            }
+//
+//            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 3, bytes, answerArrayList);
+//            mQuestionMap.put(questionId, question);
+//            count++;
+//
+//            if (!dataSnapshot.exists()) {
+//                isFinishQuestion3 = true;
+//            }
+//
+//            if (count == dataSnapshot.getChildrenCount()) {
+//                isFinishQuestion3 = true;
+//                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion2 && isFinishQuestion4) {
+//                    matchItems();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//        }
+//
+//        @Override
+//        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//
+//        }
+//
+//    };
+//
+//    private ChildEventListener mEventListener4 = new ChildEventListener() {
+//        int count = 0;
+//        @Override
+//        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//
+//            String questionId = (String) dataSnapshot.getKey();
+//            HashMap map = (HashMap) dataSnapshot.getValue();
+//
+//            String title = (String) map.get("title");
+//            String body = (String) map.get("body");
+//            String name = (String) map.get("name");
+//            String uid = (String) map.get("uid");
+//            String imageString = (String) map.get("image");
+//            Bitmap image = null;
+//            byte[] bytes;
+//
+//            if (imageString != null) {
+//                BitmapFactory.Options options = new BitmapFactory.Options();
+//                bytes = Base64.decode(imageString, Base64.DEFAULT);
+//            } else {
+//                bytes = new byte[0];
+//            }
+//
+//            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+//            HashMap answerMap = (HashMap) map.get("answers");
+//            if (answerMap != null) {
+//                for (Object key : answerMap.keySet()) {
+//                    HashMap temp = (HashMap) answerMap.get((String) key);
+//                    String answerBody = (String) temp.get("body");
+//                    String answerName = (String) temp.get("name");
+//                    String answerUid = (String) temp.get("uid");
+//                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+//                    answerArrayList.add(answer);
+//                }
+//            }
+//
+//            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), 4, bytes, answerArrayList);
+//            mQuestionMap.put(questionId, question);
+//            count++;
+//
+//            if (!dataSnapshot.exists()) {
+//                isFinishQuestion4 = true;
+//            }
+//
+//            if (count == dataSnapshot.getChildrenCount()) {
+//                isFinishQuestion4 = true;
+//                if (isFinishFavorite && isFinishQuestion1 && isFinishQuestion2 && isFinishQuestion3) {
+//                    matchItems();
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//        }
+//
+//        @Override
+//        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//        }
+//
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//
+//        }
+//
+//    };
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         int count = 0;
+
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
@@ -367,7 +448,7 @@ public class FavoritesListActivity extends AppCompatActivity {
 
                 count++;
 
-                if (count ==  dataSnapshot.getChildrenCount()){
+                if (count == dataSnapshot.getChildrenCount()) {
                     // getQuestions();
                     isFinishFavorite = true;
 
@@ -467,17 +548,22 @@ public class FavoritesListActivity extends AppCompatActivity {
             Log.d("aaa", mFavoriteRef.toString());
             mFavoriteRef.addChildEventListener(mEventListener);
 
-            mGenreRef1 = mDatabaseReference.child(Const.ContentsPATH).child("1");
-            mGenreRef1.addChildEventListener(mEventListener1);
+            mGenreRef = FirebaseDatabase.getInstance().getReference();
+            mGenreRef.addChildEventListener(mQuestionEventListener);
 
-            mGenreRef2 = mDatabaseReference.child(Const.ContentsPATH).child("2");
-            mGenreRef2.addChildEventListener(mEventListener2);
 
-            mGenreRef3 = mDatabaseReference.child(Const.ContentsPATH).child("3");
-            mGenreRef3.addChildEventListener(mEventListener3);
-
-            mGenreRef4 = mDatabaseReference.child(Const.ContentsPATH).child("4");
-            mGenreRef4.addChildEventListener(mEventListener4);
+//            mGenreRef1 = mDatabaseReference.child(Const.ContentsPATH).child("1");
+//            mGenreRef1.addChildEventListener(mEventListener1);
+//
+//
+//            mGenreRef2 = mDatabaseReference.child(Const.ContentsPATH).child("2");
+//            mGenreRef2.addChildEventListener(mEventListener2);
+//
+//            mGenreRef3 = mDatabaseReference.child(Const.ContentsPATH).child("3");
+//            mGenreRef3.addChildEventListener(mEventListener3);
+//
+//            mGenreRef4 = mDatabaseReference.child(Const.ContentsPATH).child("4");
+//            mGenreRef4.addChildEventListener(mEventListener4);
         }
     }
 
@@ -500,7 +586,7 @@ public class FavoritesListActivity extends AppCompatActivity {
         mAdapter.notifyDataSetChanged();
     }
 
-        @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;

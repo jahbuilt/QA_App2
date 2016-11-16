@@ -4,10 +4,13 @@ package jp.techacademy.atsushi.ninomiya.qa_app;
  * Created by ninomiyaatsushi on 2016/10/18.
  */
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -50,6 +53,12 @@ public class FavoritesListAdapter extends BaseAdapter{
         int resNum = mQuestionArrayList.get(position).getAnswers().size();
         resText.setText(String.valueOf(resNum));
 
+        byte[] bytes = mQuestionArrayList.get(position).getImageBytes();
+        if (bytes.length != 0) {
+            Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length).copy(Bitmap.Config.ARGB_8888, true);
+            ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
+            imageView.setImageBitmap(image);
+        }
 
         return convertView;
     }
