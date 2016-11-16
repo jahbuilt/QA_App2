@@ -8,8 +8,8 @@ import java.io.Serializable;
 
 public class Favorite implements Serializable {
     private String mQuestionUid;
-    private String mFavoriteKey;
     private int mGenre;
+    private String mFavoriteKey;
 
     public Favorite(String questionUid, int genre, String favoriteKey) {
         mQuestionUid = questionUid;
